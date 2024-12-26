@@ -22,7 +22,7 @@ class StockService(private val stocks: StockRepository) {
         log.info("Creating new stock with name. {}", KeyValuePair("stock", command))
         checkStockDoesNotExist(command)
 
-        val newStock = Stock(name = command.upperCasedName,
+        val newStock = Stock(name = command.upppercaseName(),
             description = command.description,
             currentPrice = command.currentPriceInCents,
             lastUpdate = LocalDateTime.now(ZoneOffset.UTC),
@@ -50,9 +50,9 @@ class StockService(private val stocks: StockRepository) {
     }
 
     private fun checkStockDoesNotExist(command: CreateStockCommand) {
-        val stockAlreadyExists = stocks.existsByName(command.upperCasedName)
+        val stockAlreadyExists = stocks.existsByName(command.upppercaseName())
         if (stockAlreadyExists) {
-            throw StockAlreadyExistsException("Stock with name ${command.upperCasedName} already exists")
+            throw StockAlreadyExistsException("Stock with name ${command.upppercaseName()} already exists")
         }
     }
 }

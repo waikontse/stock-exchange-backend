@@ -1,0 +1,22 @@
+erDiagram
+    STOCK {
+        long id
+        string name
+        string description
+        int price_in_cents
+        timestamp last_update
+    }
+    STOCK_EXCHANGE {
+        long id
+        string name
+        string description
+        boolean live_in_market
+    }
+    STOCK_REGISTRATION ||--|{ STOCK: contains
+    STOCK_REGISTRATION ||--|{ STOCK_EXCHANGE: contains
+    STOCK_REGISTRATION {
+        long id
+        long stock_id
+        long exchange_id
+        timestamp registered_at
+    }

@@ -6,9 +6,8 @@ import info.wkt.stock_exchange.exchange.ExchangeService
 import info.wkt.stock_exchange.stock.CreateStockCommand
 import info.wkt.stock_exchange.stock.StockService
 import org.springframework.boot.CommandLineRunner
-import org.springframework.stereotype.Component
 
-@Component
+//@Component
 class Filler(private val stockService: StockService,
              private val stockExchangeService: ExchangeService): CommandLineRunner {
     override fun run(vararg args: String?) {
@@ -43,6 +42,8 @@ class Filler(private val stockService: StockService,
             addStockToExchange(AddStockCommand("NYSE", "ST1"))
             addStockToExchange(AddStockCommand("NYSE", "ST2"))
             addStockToExchange(AddStockCommand("NYSE", "ST3"))
+            addStockToExchange(AddStockCommand("NYSE", "ST4"))
+            addStockToExchange(AddStockCommand("NYSE", "ST5"))
 
             addStockToExchange(AddStockCommand("AMSXE", "ST2"))
             addStockToExchange(AddStockCommand("AMSXE", "ST4"))

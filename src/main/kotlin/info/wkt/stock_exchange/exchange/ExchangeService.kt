@@ -4,6 +4,7 @@ import info.wkt.stock_exchange.domain.StockExchange
 import info.wkt.stock_exchange.domain.StockRegistration
 import info.wkt.stock_exchange.exceptions.ExchangeAlreadyExistsException
 import info.wkt.stock_exchange.exceptions.ExchangeNotFoundException
+import info.wkt.stock_exchange.exceptions.StockAlreadyRegistered
 import info.wkt.stock_exchange.stock.StockDTO
 import info.wkt.stock_exchange.stock.StockService
 import org.slf4j.Logger
@@ -15,9 +16,11 @@ import java.time.ZoneOffset
 
 @Service
 @Transactional
-class ExchangeService(private val exchanges: StockExchangeRepository,
-                      private val stocks: StockService,
-                      private val registrations: StockRegistrationRepository) {
+class ExchangeService(
+    private val exchanges: StockExchangeRepository,
+    private val stocks: StockService,
+    private val registrations: StockRegistrationRepository
+) {
     companion object {
         val log: Logger = LoggerFactory.getLogger(ExchangeService::class.java)
     }
@@ -36,7 +39,8 @@ class ExchangeService(private val exchanges: StockExchangeRepository,
         log.info("creating an exchange: $command")
         checkExchangeDoesNotExist(command)
 
-        val exchange = StockExchange(name = command.upperCaseName, description = command.description, liveInMarket = false);
+        val exchange =
+            StockExchange(name = command.upperCaseName, description = command.description, liveInMarket = false);
 
         return exchanges.save(exchange).let { StockExchangeDTO.fromEntity(it) }
     }
@@ -45,13 +49,21 @@ class ExchangeService(private val exchanges: StockExchangeRepository,
         log.info("adding stock to exchange: $command")
 
         val foundExchange = exchanges.findByName(command.exchangeName)
+            ?: throw ExchangeNotFoundException("Exchange with name: $command.exchangeName not found")
         val foundStockId = stocks.findIdByName(command.stockName)
-        val foundStock = stocks.findById(foundStockId);
+        val foundStock = stocks.findById(foundStockId)
 
+        if (foundExchange.hasRegisteredStock(foundStock)) {
+            throw StockAlreadyRegistered("Stock with name: $foundStock already registered on exchange: $command.exchangeName")
+        }
 
-        val registration = StockRegistration(exchange = foundExchange!!, stock = foundStock, registeredAt = LocalDateTime.now(
-            ZoneOffset.UTC))
-        registrations.save(registration)
+        val registration = StockRegistration(
+            exchange = foundExchange, stock = foundStock,
+            registeredAt = LocalDateTime.now(ZoneOffset.UTC)
+        )
+        registrations.saveAndFlush(registration)
+        foundExchange.updateIsLiveInMarket()
+        exchanges.save(foundExchange)
 
         return foundExchange.run { StockExchangeDTO.fromEntity(this) }
     }
