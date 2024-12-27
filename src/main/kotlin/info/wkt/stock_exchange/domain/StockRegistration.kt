@@ -7,11 +7,11 @@ import java.time.LocalDateTime
 class StockRegistration(
     @Id @GeneratedValue val id: Long? = null,
 
-    @ManyToOne
+    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH])
     @JoinColumn(name = "exchange_id")
     val exchange: StockExchange,
 
-    @ManyToOne
+    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH])
     @JoinColumn(name = "stock_id")
     val stock: Stock,
 

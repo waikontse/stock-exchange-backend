@@ -44,7 +44,7 @@ class StockExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException::class, produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleRuntimeException(ex: RuntimeException): ResponseEntity<ErrorResponse> {
+    fun handleRuntimeException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.badRequest().build()
     }
 }

@@ -22,11 +22,11 @@ class StockService(private val stocks: StockRepository) {
         log.info("Creating new stock with name. {}", KeyValuePair("stock", command))
         checkStockDoesNotExist(command)
 
-        val newStock = Stock(name = command.upppercaseName(),
+        val newStock = Stock(
+            name = command.upppercaseName(),
             description = command.description,
             currentPrice = command.currentPriceInCents,
             lastUpdate = LocalDateTime.now(ZoneOffset.UTC),
-            registrations = listOf()
         )
 
         return stocks.save(newStock).let { StockDTO.fromEntity(it) }
@@ -36,17 +36,9 @@ class StockService(private val stocks: StockRepository) {
         return stocks.findAll().map { StockDTO.fromEntity(it) }
     }
 
-    fun findByName(stockName: String): StockDTO {
-        return stocks.findByName(stockName)?.let { StockDTO.fromEntity(it) }
+    fun findByName(stockName: String): Stock {
+        return stocks.findByName(stockName)
             ?: throw StockNotFoundException("Stock with name $stockName not found")
-    }
-
-    fun findIdByName(stockName: String): Long {
-        return stocks.findByName(stockName)?.id ?: throw StockNotFoundException("Stock with name $stockName not found")
-    }
-
-    fun findById(id: Long): Stock {
-        return stocks.findById(id).get()
     }
 
     private fun checkStockDoesNotExist(command: CreateStockCommand) {
@@ -60,7 +52,12 @@ class StockService(private val stocks: StockRepository) {
 data class StockDTO(val name: String, val priceInCents: Int, val description: String, val lastUpdated: LocalDateTime) {
     companion object {
         fun fromEntity(entity: Stock): StockDTO {
-            return StockDTO(name = entity.name, priceInCents = entity.currentPrice, description = entity.description ?: "", lastUpdated = entity.lastUpdate)
+            return StockDTO(
+                name = entity.name,
+                priceInCents = entity.currentPrice,
+                description = entity.description ?: "",
+                lastUpdated = entity.lastUpdate
+            )
         }
     }
 }

@@ -35,7 +35,7 @@ class StockControllerIT(
     }
 
     @Test
-    fun `add a non-existant stock, should add a new stock`() {
+    fun `add a non existing stock, should add a new stock`() {
         // GIVEN
         val expectedName = "vwl"
         val expectedDescription = "vwl description"

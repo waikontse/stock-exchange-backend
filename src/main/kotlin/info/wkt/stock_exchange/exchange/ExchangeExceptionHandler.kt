@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.ErrorResponse
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -14,13 +15,13 @@ class ExchangeExceptionHandler {
     @ExceptionHandler(StockAlreadyExistsException::class, produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     fun handleStockAlreadyExistsExxeption(ex: StockAlreadyExistsException): ResponseEntity<ErrorResponse> {
-        return ResponseEntity.notFound().build()
+        return ResponseEntity.unprocessableEntity().build()
     }
 
     @ExceptionHandler(ExchangeAlreadyExistsException::class, produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     fun handleExchangeAlreadyExistsException(ex: ExchangeAlreadyExistsException): ResponseEntity<ErrorResponse> {
-        return ResponseEntity.notFound().build()
+        return ResponseEntity.unprocessableEntity().build()
     }
 
     @ExceptionHandler(ExchangeNotFoundException::class, produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -39,5 +40,11 @@ class ExchangeExceptionHandler {
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     fun handleBusinessException(ex: BusinessExceptions): ResponseEntity<ErrorResponse> {
         return ResponseEntity.unprocessableEntity().build()
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class, produces = [MediaType.APPLICATION_JSON_VALUE])
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleRuntimeException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.badRequest().build()
     }
 }

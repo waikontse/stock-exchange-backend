@@ -7,6 +7,8 @@ import info.wkt.stock_exchange.exceptions.ExchangeNotFoundException
 import info.wkt.stock_exchange.exceptions.StockAlreadyRegistered
 import info.wkt.stock_exchange.stock.StockDTO
 import info.wkt.stock_exchange.stock.StockService
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -19,7 +21,9 @@ import java.time.ZoneOffset
 class ExchangeService(
     private val exchanges: StockExchangeRepository,
     private val stocks: StockService,
-    private val registrations: StockRegistrationRepository
+    private val registrations: StockRegistrationRepository,
+    @field:PersistenceContext
+    private val entityManager: EntityManager
 ) {
     companion object {
         val log: Logger = LoggerFactory.getLogger(ExchangeService::class.java)
@@ -35,12 +39,19 @@ class ExchangeService(
             ?: throw ExchangeNotFoundException("Exchange with name $name not found")
     }
 
+    private fun findExchangeByName(name: String): StockExchange {
+        return exchanges.findByName(name) ?: throw ExchangeNotFoundException("Exchange with name $name not found")
+    }
+
     fun createExchange(command: CreateExchangeCommand): StockExchangeDTO {
         log.info("creating an exchange: $command")
         checkExchangeDoesNotExist(command)
 
-        val exchange =
-            StockExchange(name = command.upperCaseName, description = command.description, liveInMarket = false);
+        val exchange = StockExchange(
+            name = command.uppercaseName(),
+            description = command.description,
+            liveInMarket = false,
+        )
 
         return exchanges.save(exchange).let { StockExchangeDTO.fromEntity(it) }
     }
@@ -48,33 +59,36 @@ class ExchangeService(
     fun addStockToExchange(command: AddStockCommand): StockExchangeDTO {
         log.info("adding stock to exchange: $command")
 
-        val foundExchange = exchanges.findByName(command.exchangeName)
-            ?: throw ExchangeNotFoundException("Exchange with name: $command.exchangeName not found")
-        val foundStockId = stocks.findIdByName(command.stockName)
-        val foundStock = stocks.findById(foundStockId)
+        val foundExchange = findExchangeByName(command.exchangeName)
+        val foundStock = stocks.findByName(command.stockName)
 
         if (foundExchange.hasRegisteredStock(foundStock)) {
-            throw StockAlreadyRegistered("Stock with name: $foundStock already registered on exchange: $command.exchangeName")
+            throw StockAlreadyRegistered("Stock with name: ${foundStock.name} already registered on exchange: $command.exchangeName")
         }
 
         val registration = StockRegistration(
-            exchange = foundExchange, stock = foundStock,
-            registeredAt = LocalDateTime.now(ZoneOffset.UTC)
+            exchange = foundExchange, stock = foundStock, registeredAt = LocalDateTime.now(ZoneOffset.UTC)
         )
         registrations.saveAndFlush(registration)
-        foundExchange.updateIsLiveInMarket()
-        exchanges.save(foundExchange)
 
-        return foundExchange.run { StockExchangeDTO.fromEntity(this) }
+        updateIsLiveInMarketAndSave(foundExchange)
+
+        return updateIsLiveInMarketAndSave(foundExchange).run { StockExchangeDTO.fromEntity(this) }
+    }
+
+    private fun updateIsLiveInMarketAndSave(foundExchange: StockExchange): StockExchange {
+        entityManager.refresh(foundExchange)
+        foundExchange.updateIsLiveInMarket()
+
+        return exchanges.save(foundExchange)
     }
 
     private fun checkExchangeDoesNotExist(command: CreateExchangeCommand) {
-        val exchangeExists = exchanges.existsByName(command.upperCaseName);
+        val exchangeExists = exchanges.existsByName(command.uppercaseName())
         if (exchangeExists) {
-            throw ExchangeAlreadyExistsException("Exchange with name ${command.upperCaseName} already exists.")
+            throw ExchangeAlreadyExistsException("Exchange with name ${command.uppercaseName()} already exists.")
         }
     }
-
 }
 
 data class StockExchangeDTO(
@@ -88,7 +102,7 @@ data class StockExchangeDTO(
             return StockExchangeDTO(
                 entity.name,
                 entity.description,
-                entity.registrations?.map { StockDTO.fromEntity(it.stock) } ?: listOf(),
+                entity.registrations.map { StockDTO.fromEntity(it.stock) },
                 entity.liveInMarket
             )
         }

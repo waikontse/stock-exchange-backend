@@ -19,22 +19,22 @@ class StockExchange(
     @Column
     var liveInMarket: Boolean = false,
 
-    @OneToMany(mappedBy = "exchange")
-    val registrations: Set<StockRegistration>? = setOf(),
+    @OneToMany(mappedBy = "exchange", cascade = [CascadeType.PERSIST, CascadeType.REFRESH])
+    val registrations: Set<StockRegistration> = setOf(),
 ) {
     companion object {
         val log: Logger = LoggerFactory.getLogger(StockExchange::class.java)
     }
 
     fun updateIsLiveInMarket() {
-        log.info("Updating is live in market for exchange $name with stock size: ${registrations?.size ?: -1}")
+        log.info("Updating is live in market for exchange $name with stock size: ${registrations.size}")
 
-        if ((registrations?.size ?: 0) >= 5) {
+        if (registrations.size >= 5) {
             liveInMarket = true
         }
     }
 
     fun hasRegisteredStock(stock: Stock): Boolean {
-        return registrations?.map { it.stock }?.contains(stock) ?: false
+        return registrations.map { it.stock }.contains(stock)
     }
 }

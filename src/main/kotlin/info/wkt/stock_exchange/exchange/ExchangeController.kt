@@ -45,10 +45,10 @@ class ExchangeController(private val exchangeService: ExchangeService) {
 }
 
 data class CreateExchangeCommand(
-    @field:NotBlank private val name: String,
+    @field:NotBlank val name: String,
     @field:NotBlank val description: String
 ) {
-    val upperCaseName: String = name.uppercase()
+    fun uppercaseName(): String = name.uppercase()
 }
 
 data class AddStockCommand(

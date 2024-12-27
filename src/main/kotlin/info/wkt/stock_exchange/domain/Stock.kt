@@ -21,7 +21,7 @@ class Stock(
     @Column
     val lastUpdate: LocalDateTime,
 
-    @OneToMany(mappedBy = "stock")
-    val registrations: List<StockRegistration>
+    @OneToMany(mappedBy = "stock", cascade = [CascadeType.REFRESH, CascadeType.PERSIST])
+    val registrations: Set<StockRegistration> = setOf(),
 ) {
 }
