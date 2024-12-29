@@ -1,0 +1,9 @@
+### Create a new stock
+POST localhost:8080/api/v1/stocks
+Content-Type: application/json
+
+{
+  "name": "vwl",
+  "description": "vwl description",
+  "currentPriceInCents": 42
+}
