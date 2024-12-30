@@ -16,10 +16,10 @@ class Stock(
     val description: String?,
 
     @Column(name = "price_in_cents")
-    val currentPrice: Int,
+    var currentPrice: Int,
 
     @Column
-    val lastUpdate: LocalDateTime,
+    var lastUpdate: LocalDateTime,
 
     @OneToMany(mappedBy = "stock", cascade = [CascadeType.REFRESH, CascadeType.PERSIST])
     val registrations: Set<StockRegistration> = setOf(),

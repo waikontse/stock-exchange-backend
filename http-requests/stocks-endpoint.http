@@ -7,3 +7,12 @@ Content-Type: application/json
   "description": "vwl description",
   "currentPriceInCents": 42
 }
+
+###
+POST localhost:8080/api/v1/stocks/vwl
+Content-Type: application/json
+
+{
+"name": "vwl",
+"currentPriceInCents": 4242
+}

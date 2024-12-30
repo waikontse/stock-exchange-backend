@@ -32,6 +32,16 @@ class StockService(private val stocks: StockRepository) {
         return stocks.save(newStock).let { StockDTO.fromEntity(it) }
     }
 
+    fun updateStock(command: UpdateStockCommand): StockDTO {
+        log.info("Updating stock with name. {}", KeyValuePair("stock", command))
+
+        val stockToUpdate = findByName(command.uppercaseName())
+        stockToUpdate.currentPrice = command.currentPriceInCents
+        stockToUpdate.lastUpdate = LocalDateTime.now(ZoneOffset.UTC)
+
+        return stocks.save(stockToUpdate).let { StockDTO.fromEntity(it) }
+    }
+
     fun getAllStocks(): List<StockDTO> {
         return stocks.findAll().map { StockDTO.fromEntity(it) }
     }
