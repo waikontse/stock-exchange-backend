@@ -59,8 +59,8 @@ class ExchangeService(
     fun addStockToExchange(command: AddStockCommand): StockExchangeDTO {
         log.info("adding stock to exchange: $command")
 
-        val foundExchange = findExchangeByName(command.exchangeName)
-        val foundStock = stocks.findByName(command.stockName)
+        val foundExchange = findExchangeByName(command.exchangeName.uppercase())
+        val foundStock = stocks.findByName(command.stockName.uppercase())
 
         if (foundExchange.hasRegisteredStock(foundStock)) {
             throw StockAlreadyRegistered("Stock with name: ${foundStock.name} already registered on exchange: $command.exchangeName")

@@ -5,7 +5,8 @@ import java.time.LocalDateTime
 
 @Entity
 class StockRegistration(
-    @Id @GeneratedValue val id: Long? = null,
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null,
 
     @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH])
     @JoinColumn(name = "exchange_id")
